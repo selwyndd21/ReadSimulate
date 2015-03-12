@@ -68,7 +68,7 @@ int main(int argc, char** argv )
 #endif
         for (i=0; i < 11; i++ )
         {
-          subline = line[line_itr].substr(5+7*i,5);
+          subline = line[line_itr].substr(4+7*i,6);
           // Line format: every number has 5 digit and 2 spacing, started from 5th
           tmp_flt = atof( subline.c_str() );
           coredata_itr = 25*k + 5*j + i + 11*halfcore;
@@ -88,7 +88,6 @@ int main(int argc, char** argv )
     }
   }
   cout << "End input array"<< endl;
-
 
 
 
