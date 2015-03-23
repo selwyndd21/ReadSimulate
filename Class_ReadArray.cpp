@@ -7,7 +7,7 @@
 
 using namespace std;
 int Error(string message);
-#define DEBUG_readarray
+//#define DEBUG_readarray
 
 class core3ddata
 {
@@ -107,11 +107,11 @@ int core3ddata::readtable (char *filename)
 
 int main(int argc, char** argv )
 {
+  cout << "Arguments:" << argc << endl;
  
   core3ddata core;
   core.readtable(argv[1]);
 
-  cout << "Arguments:" << argc << endl;
   return 0;
 }
 
