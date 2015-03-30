@@ -71,13 +71,8 @@ int extract_rm(int cases, int steps)
       int tmp_int = i*100 + j; // set extract file name
       stepname.str(""); stepname.clear(); // clear stringstream
       stepname << "CASE" << setfill('0') << setw(4) << tmp_int << ".txt";
-      ifstream my_file( stepname.str().c_str() );
       //cout << "try to delete " << stepname.str().c_str() << endl;
-      if (my_file.good() )
-      {
-        //cout << "Delete " << stepname.str().c_str() << endl;
-        remove( stepname.str().c_str() ) ;
-      }
+      remove( stepname.str().c_str() ) ;
     }
   }
   
