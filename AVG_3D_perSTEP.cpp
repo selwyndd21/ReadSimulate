@@ -11,7 +11,8 @@
 using namespace std;
 int Error(string message);
 int extractCASE (char *filename);
-#define DEBUG_readarray
+int extract_rm(int cases, int steps);
+//#define DEBUG_readarray
 
 int main(int argc, char** argv )
 {
@@ -19,7 +20,7 @@ int main(int argc, char** argv )
   ofstream   out_file;
   ifstream   operationfile("operation.txt");
   float      time[50], power[50];
-  int        Cycle=0, inCycle=0;        // CASES in the cycle
+  int        CycleDay=0, inCycle=0;        // CASES in the cycle
   core3ddata core;
   float      tmp_flt=0;
   float      tmp_data[12100]={0};      // initiate vectors for a core
@@ -59,10 +60,10 @@ int main(int argc, char** argv )
 
     if (power[inCycle] > 2)
     { power[inCycle]=power[inCycle]/100; }
-    Cycle= Cycle + time[inCycle];
+    CycleDay = CycleDay + time[inCycle];
     inCycle++;
   }
-  cout << "Total " << setw(3) << inCycle << " STEPS between " << Cycle << " days" << endl;
+  cout << "Total " << setw(3) << inCycle << " STEPS between " << CycleDay << " days" << endl;
   operationfile.close();
 
   // load all element for every CASE
@@ -78,7 +79,7 @@ int main(int argc, char** argv )
     // AVG the POWER
     for (coredata_itr=0; coredata_itr < 12100 ; coredata_itr++)
     {
-       tmp_flt = core.element( coredata_itr ) * time[t]/Cycle * power[t];
+       tmp_flt = core.element( coredata_itr ) * time[t]/CycleDay * power[t];
        tmp_data[coredata_itr] = tmp_data[coredata_itr] + tmp_flt;
     }
    
@@ -140,10 +141,15 @@ int main(int argc, char** argv )
           debug_file << endl;
         }// for j loop
       }// for k loop
-    }
+    } // halfcore
     debug_file.close();
 #endif
-  }
+  }// end while getline
+
+#ifndef DEBUG_readarray
+  // Remove CASE files
+  extract_rm(inCycle, 2);
+#endif
 
   // print x-y power fraction
   out_file << "Print X-Y fraction for every Z layer" << endl;

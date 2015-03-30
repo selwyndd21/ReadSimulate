@@ -60,19 +60,26 @@ int extractCASE (char *filename)
 
 
 
-/*int extractCASE_rm(int cases, int steps)
+int extract_rm(int cases, int steps)
 {
+  //cout << "in rm function" << endl;
   stringstream stepname;
-  for (int i=cases; i > 1; i--)
+  for (int i=cases; i > 0; i--)
   {
-    for (int j=steps; j > 1; j--)
+    for (int j=steps; j >= 0; j--)
     {
-      tmp_int = cases*100 + steps; // set extract file name
+      int tmp_int = i*100 + j; // set extract file name
       stepname.str(""); stepname.clear(); // clear stringstream
       stepname << "CASE" << setfill('0') << setw(4) << tmp_int << ".txt";
-      if ()
+      ifstream my_file( stepname.str().c_str() );
+      //cout << "try to delete " << stepname.str().c_str() << endl;
+      if (my_file.good() )
+      {
+        //cout << "Delete " << stepname.str().c_str() << endl;
+        remove( stepname.str().c_str() ) ;
+      }
     }
   }
   
   return 0;
-}; */
+}; 
