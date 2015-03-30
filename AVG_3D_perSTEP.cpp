@@ -36,11 +36,12 @@ int main(int argc, char** argv )
     cout << "Comment: default output is set" << endl;
     line="output.txt";
   }
-  else if ( argc < 2 )
+  else if ( argc > 2 )
   {
     line=argv[2];
   }
   out_file.open( line.c_str(), std::ofstream::trunc );
+  cout << "Output file is " << line << endl;
 
   // separate CASE from intact file
   extractCASE( argv[1] );
