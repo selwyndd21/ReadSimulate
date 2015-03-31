@@ -37,7 +37,9 @@ core3ddata::core3ddata()// Constructor
 int core3ddata::readtable (string filename)
 {
   ifstream myfile(filename.c_str() );
+#ifdef DEBUG_readarray
   cout << "in Class core3ddata: Read " << filename << endl;
+#endif
   if(!myfile) 
   {
     cout << "Error: No valid file exist!" << endl;
@@ -55,7 +57,9 @@ int core3ddata::readtable (string filename)
 #endif
     line_itr++;
   }
+#ifdef DEBUG_readarray
   cout << "in Class core3ddata: Lines are read:" << line_itr << endl;
+#endif
   if (line_itr < 25*22*2-1 )
   {
     cout << "Error: in Class core3ddata: Incomplete input file for a whole core" << endl;
@@ -128,7 +132,9 @@ int core3ddata::readtable (string filename)
   {
     tmp_flt = tmp_flt + coredata[coredata_itr];
   }
+#ifdef DEBUG_readarray
   cout << "in Class core3ddata: Read " << filename << " with Normalized Power " << tmp_flt << endl;
+#endif
   myfile.close();
   return 0;
 }

@@ -1,10 +1,10 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
 #include <cstdlib>
+#include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <vector>
+#include <cmath>
 
 #include "Class_core3ddata.hpp"
 
@@ -34,8 +34,8 @@ int main(int argc, char** argv )
   { Error("No Inputfile!"); }
   else if ( argc == 2 )
   {
-    cout << "Comment: default output is set" << endl;
-    line="output.txt";
+    cout << "Comment: default output is set to output_3DRPF.txt" << endl;
+    line="output_3DRPF.txt";
   }
   else if ( argc > 2 )
   {
@@ -56,7 +56,9 @@ int main(int argc, char** argv )
     linestream.str(""); linestream.clear(); // clear stringstream
     linestream.str( line );
     linestream >> time[inCycle] >> power[inCycle];
+#ifdef DEBUG_readarray
     cout << setw(7) << time[inCycle] << setw(7) << power[inCycle] << endl;
+#endif
 
     if (power[inCycle] > 2)
     { power[inCycle]=power[inCycle]/100; }
@@ -74,7 +76,8 @@ int main(int argc, char** argv )
     readname.str(""); readname.clear(); // clear stringstream
     readname << "CASE" << setfill('0') << setw(2) << t+1 << "01.txt";
     core.readtable( readname.str() ); // load 3-D data for CASE t
-    cout << " CASE" << setw(3) << t+1 << " STEP  1" << endl;
+    cout << "  Averaging the core3ddata in CASE" << setw(3) << t+1 
+         << " STEP  1" << endl;
 
     // AVG the POWER
     for (coredata_itr=0; coredata_itr < 12100 ; coredata_itr++)
@@ -174,6 +177,7 @@ int main(int argc, char** argv )
   }// for k loop
 
   // print x-z power fraction
+  out_file << endl << endl << endl;
   out_file << "Print X-Z fraction for every Y layer" << endl;
   for ( j=0; j < 22; j++)
   {
@@ -194,8 +198,46 @@ int main(int argc, char** argv )
     }// for k loop
   }// for j loop
 
-  out_file.close();
 
+  // print intensity for MAVRIC
+  out_file << endl << endl << endl;
+  float strength = 1.362E16;
+  out_file << "Print Intensity Card for MAVRIC, with AVG Strength=" 
+           << uppercase << scientific << strength << endl;
+  cout     << "Print Intensity Card for MAVRIC, with AVG strength=" 
+           << uppercase << scientific << strength << endl;
+  t=0;
+  for (k=25; k > 0; k--)
+  {
+    for (j=0; j< 11; j++)
+    {
+      for (i=11; i<22; i++)
+      {
+        coredata_itr = 484*(k-1) + 22*j + i;
+        tmp_flt = tmp_data[coredata_itr]; // locate source element 
+        tmp_flt = strength * tmp_flt; // multiply the source strength
+        if ( abs( tmp_flt ) < 1E-2 )
+        { continue; }
+        out_file << "    src " << setw(4) << t+1 << endl;
+        out_file << "        title=\"source (i=" << setw(2) << i+1 
+                 << ",j=" << setw(2) << j+1 
+                 << ",k=" << setw(2) << k 
+                 << ") src=" << setw(4) << t+1
+                 << "\" neutrons " << endl;
+        out_file << "        mixture=" << t+1 
+                 << "   strength=" << uppercase << scientific << tmp_flt << endl;
+        out_file << "        cuboid 167.64 -167.64 167.64 -167.64  635.9525 254.9525" << endl;
+        out_file << "        eDistributionID=1" << endl ;
+        out_file << "    end src" << endl ;
+        t++;
+      }
+    }
+  }
+  out_file << "There are " << t << " sources" << endl;
+  out_file.close();
+  
+  
+  
   return 0;
 }
 

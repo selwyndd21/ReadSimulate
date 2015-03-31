@@ -51,7 +51,9 @@ int extractCASE (char *filename)
       outfile << line << endl;
     }
   }
+#ifdef DEBUG_readarray
   cout << " extractCASE: Lines input:" << line_itr << endl;
+#endif
 
   return 0;
 }

@@ -1,2 +1,2 @@
 
-g++ --debug -Wall -static-libstdc++ -static-libgcc AVG_3D_perSTEP.cpp function_splitCASE.cpp -o winstatic_read.exe
+g++ --debug -Wall -static-libstdc++ -static-libgcc AVG_3DRPF_perSTEP.cpp function_splitCASE.cpp -o win_static_3DRPF_read.exe
