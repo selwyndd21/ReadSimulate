@@ -22,7 +22,7 @@ int main(int argc, char** argv )
   float      time[50], power[50];
   int        CycleDay=0, inCycle=0;        // CASES in the cycle
   core3ddata core;
-  float      tmp_flt=0;
+  float      tmp_flt=0, sum_quadra=0;
   float      tmp_data[12100]={0};      // initiate vectors for a core
   int        i, j, k, t;
   int        coredata_itr=0;
@@ -34,8 +34,8 @@ int main(int argc, char** argv )
   { Error("No Inputfile!"); }
   else if ( argc == 2 )
   {
-    cout << "Comment: default output is set to output_3DRPF.txt" << endl;
     line="output_3DRPF.txt";
+    cout << "Comment: default output is set to "<< line << endl;
   }
   else if ( argc > 2 )
   {
@@ -48,7 +48,11 @@ int main(int argc, char** argv )
   extractCASE( argv[1] );
 
 
+  //--------------------------------------
   // load operation data for every CASE: dates and power_fraction
+  //--------------------------------------
+  if(!operationfile) 
+  { Error("Error: No valid file exist!"); }
   while (getline(operationfile, line) && !operationfile.eof() && inCycle < 50 )
   {
     if (line.at(0) == 'c' || line.empty() )
@@ -61,25 +65,30 @@ int main(int argc, char** argv )
 #endif
 
     if (power[inCycle] > 2)
-    { power[inCycle]=power[inCycle]/100; }
+    { power[inCycle]=power[inCycle]/100; } // put percentage into ratio
     CycleDay = CycleDay + time[inCycle];
     inCycle++;
   }
   cout << "Total " << setw(3) << inCycle << " STEPS between " << CycleDay << " days" << endl;
   operationfile.close();
 
+  //--------------------------------------
   // load all element for every CASE
+  //--------------------------------------
   stringstream readname;
   for ( t=0 ; t < inCycle; t++)
   {
     //read the CASE file at STEP 1
     readname.str(""); readname.clear(); // clear stringstream
     readname << "CASE" << setfill('0') << setw(2) << t+1 << "01.txt";
-    core.readtable( readname.str() ); // load 3-D data for CASE t
-    cout << "  Averaging the core3ddata in CASE" << setw(3) << t+1 
-         << " STEP  1" << endl;
+    //--------------------------------------
+    // load 3-D data for CASE t using Class "core"
+    //--------------------------------------
+    core.readtable( readname.str() ); 
 
     // AVG the POWER
+    cout << "  Averaging the core3ddata in CASE" << setw(3) << t+1 
+         << " STEP  1" << endl;
     for (coredata_itr=0; coredata_itr < 12100 ; coredata_itr++)
     {
        tmp_flt = core.element( coredata_itr ) * time[t]/CycleDay * power[t];
@@ -192,51 +201,103 @@ int main(int argc, char** argv )
       {
         coredata_itr = 484*(k-1) + 22*j + i;
         tmp_flt = tmp_data[coredata_itr];
-        out_file << " "  << fixed << setw(6) << setprecision(3) << tmp_flt;
+        out_file << " " << fixed << setw(6) << setprecision(3) << tmp_flt;
       }// for i loop
       out_file << endl;
     }// for k loop
   }// for j loop
 
 
-  // print intensity for MAVRIC
+  // export 3D source for MAVRIC
   out_file << endl << endl << endl;
-  float strength = 1.362E16;
-  out_file << "Print Intensity Card for MAVRIC, with AVG Strength=" 
+  float strength = 1.389E20;
+  out_file << "Print Source Card for MAVRIC, with AVG Strength=" 
            << uppercase << scientific << strength << endl;
-  cout     << "Print Intensity Card for MAVRIC, with AVG strength=" 
+  cout     << "Print Source Card for MAVRIC, with AVG strength=" 
            << uppercase << scientific << strength << endl;
+
   t=0;
-  for (k=25; k > 0; k--)
+  out_file << "Print Distribution sets in Definition Block" << endl;
+  for (j=0; j< 11; j++)
   {
-    for (j=0; j< 11; j++)
+    for (i=11; i<22; i++)
     {
-      for (i=11; i<22; i++)
+      // if the column is very small -> neglect this column!
+      k=25;
+      coredata_itr = 484*(k-1) + 22*j + i;
+      tmp_flt = tmp_data[coredata_itr]; // locate source element 
+      if ( abs( tmp_flt ) < 1E-2 )
+      { continue; }
+
+      out_file << "  distribution " << setw(4) << t+2 << endl;
+      out_file << "    title=\"source (i=" << setw(2) << i+1 
+               << ",j=" << setw(2) << j+1 
+               << ") src=" << setw(4) << t+1 << "\"" << endl;
+      out_file << "    abscissa 635.9525 620.7125 605.4725 590.2325 574.9925" << endl;
+      out_file << "             559.7525 544.5125 529.2725 514.0325 498.7925" << endl;
+      out_file << "             483.5525 468.3125 453.0725 437.8325 422.5925" << endl;
+      out_file << "             407.3525 392.1125 376.8725 361.6325 346.3925" << endl;
+      out_file << "             331.1525 315.9125 300.6725 285.4325 270.1925" << endl;
+      out_file << "             254.9525      end" << endl;
+      out_file << "    truePDF" ;
+      for (k=25; k > 0; k--)
       {
         coredata_itr = 484*(k-1) + 22*j + i;
         tmp_flt = tmp_data[coredata_itr]; // locate source element 
-        tmp_flt = strength * tmp_flt; // multiply the source strength
-        if ( abs( tmp_flt ) < 1E-2 )
-        { continue; }
-        out_file << "    src " << setw(4) << t+1 << endl;
-        out_file << "        title=\"source (i=" << setw(2) << i+1 
-                 << ",j=" << setw(2) << j+1 
-                 << ",k=" << setw(2) << k 
-                 << ") src=" << setw(4) << t+1
-                 << "\" neutrons " << endl;
-        out_file << "        mixture=" << t+1 
-                 << "   strength=" << uppercase << scientific << tmp_flt << endl;
-        out_file << "        cuboid 167.64 -167.64 167.64 -167.64  635.9525 254.9525" << endl;
-        out_file << "        eDistributionID=1" << endl ;
-        out_file << "    end src" << endl ;
-        t++;
+        out_file << "  " << setw(7) << fixed << setprecision(3) << tmp_flt;
+        if ( (k-1)%5 == 0 )
+        { out_file << endl << "           "; }
       }
+      out_file << "end" << endl;
+      out_file << "  end distribution" << endl;
+      t++;
     }
   }
-  out_file << "There are " << t << " sources" << endl;
+  out_file << "There are " << t << " sources" << endl << endl;;
+
+  for (coredata_itr=0; coredata_itr < 12100 ; coredata_itr++)
+  {
+     sum_quadra= tmp_data[coredata_itr] + sum_quadra;
+  };
+
+  t=0;
+  float check_sum=0;
+  out_file << "Print SRC sets in Source Block" << endl;
+  for (j=0; j< 11; j++)
+  {
+    for (i=11; i<22; i++)
+    {
+      // if the column is very small -> neglect this column!
+      k=25;
+      coredata_itr = 484*(k-1) + 22*j + i;
+      tmp_flt = tmp_data[coredata_itr]; // locate source element 
+      if ( abs( tmp_flt ) < 1E-2 )
+      { continue; }
+      tmp_flt=0;
+      for (k=25; k>0; k--)
+      { tmp_flt = tmp_data[coredata_itr] + tmp_flt; }
+
+      check_sum=tmp_flt/sum_quadra*strength;
+      out_file << "  src " << setw(4) << t+1 << endl;
+      out_file << "    title=\"source (i=" << setw(2) << i+1 
+               << ",j=" << setw(2) << j+1 
+               << ") \" " << endl; 
+      out_file << "    neutrons" << endl;
+      out_file << "    strength=" << uppercase << scientific << check_sum << endl;
+      out_file << "    cuboid 167.64 -167.64 167.64 -167.64  635.9525 254.9525" << endl;
+      out_file << "    unit=" << t+1 << endl;
+      out_file << "    eDistributionID=" << t+1 << endl ;
+      out_file << "    zdistribution=" << t+2 << " zscaledist" << endl ;
+      out_file << "  end src" << endl ;
+      t++;
+    }
+  }
+  if ( abs(check_sum/strength-1) > 1E3 )
+  {cout << "Column Weighted Source is not conserved with Total Source!!\n"; }
+  else
+  {cout << "Column Weighted Source is conserved with Total Source\n"; }
+
   out_file.close();
-  
-  
   
   return 0;
 }

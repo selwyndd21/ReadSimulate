@@ -16,11 +16,13 @@ public:
   core3ddata();
   // parameters
   // function
-  int readtable (string filename);
+  float readtable (string filename);
   float element (int ele_itr);//return element
+  float sum_element ();
 private:
   string line[1101], subline; //maximum line read in
   float  coredata[12100];      // initiate for a core
+  float  multiband[12100];      // initiate for a core
   int    max_line;
   int    line_itr, coredata_itr;
   int    halfcore, i, j, k;      // core iterators, halfcore=0, left; =1, right
@@ -32,9 +34,9 @@ core3ddata::core3ddata()// Constructor
 {
   fill_n( &coredata[0], 12100, 0); // reset coredata to 0
   max_line=1100;
-}
+};
 
-int core3ddata::readtable (string filename)
+float core3ddata::readtable (string filename)
 {
   ifstream myfile(filename.c_str() );
 #ifdef DEBUG_readarray
@@ -90,7 +92,7 @@ int core3ddata::readtable (string filename)
       cout << "(ROW " << j+1 << "/" << 44-2*j << ")" << endl;
 #endif
       line_itr = 25*j + 550*halfcore; // relocate to new table
-      for (k=25; k > 0; k--)
+      for (k=25; k > 0; k--)  // Read Z-direction from Top to Bottom
       {
         subline = line[line_itr].substr(1,2);
         int tmp_int = atof ( subline.c_str() );
@@ -126,21 +128,32 @@ int core3ddata::readtable (string filename)
       }// for k loop
     }// for j loop
   }
+#ifdef DEBUG_readarray
   // Print Summary
   tmp_flt = 0;
   for (coredata_itr=0; coredata_itr<12100; coredata_itr++)
   {
     tmp_flt = tmp_flt + coredata[coredata_itr];
   }
-#ifdef DEBUG_readarray
   cout << "in Class core3ddata: Read " << filename << " with Normalized Power " << tmp_flt << endl;
 #endif
   myfile.close();
-  return 0;
-}
+  return tmp_flt;
+};
 
 float core3ddata::element (int ele_itr)
 {
   return coredata[ele_itr];
-}
+};
 
+float core3ddata::sum_element ()
+{
+  // Print Summary
+  tmp_flt = 0;
+  for (coredata_itr=0; coredata_itr<12100; coredata_itr++)
+  {
+    tmp_flt = tmp_flt + coredata[coredata_itr];
+  }
+  cout << "Elements Number: " << coredata_itr+1 << ", Total Elements Values:" << tmp_flt << endl;
+  return tmp_flt;
+};
